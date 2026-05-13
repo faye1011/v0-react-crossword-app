@@ -305,11 +305,11 @@ export function CrosswordGrid({ data }: CrosswordGridProps) {
       )}
 
       {/* Grid and Clues */}
-      <div className="grid lg:grid-cols-[auto_1fr] gap-8">
+      <div className="flex flex-col gap-8">
         {/* Grid */}
-        <div className="overflow-auto">
+        <div className="flex justify-center overflow-auto">
           <div
-            className="inline-grid gap-0 border border-border bg-background p-1 rounded-lg"
+            className="inline-grid gap-0 border-2 border-foreground bg-foreground rounded-sm"
             style={{
               gridTemplateColumns: `repeat(${data.gridSize}, minmax(0, 1fr))`,
             }}
@@ -358,15 +358,15 @@ export function CrosswordGrid({ data }: CrosswordGridProps) {
       </div>
 
       {/* Keyboard hints */}
-      <div className="text-center text-sm text-muted-foreground space-x-4">
+      <div className="text-center text-xs sm:text-sm text-muted-foreground flex flex-wrap justify-center gap-2 sm:gap-4">
         <span>
-          <kbd className="px-2 py-1 bg-secondary rounded text-xs">Space</kbd> Toggle direction
+          <kbd className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-secondary rounded text-[10px] sm:text-xs">Space</kbd> Toggle
         </span>
         <span>
-          <kbd className="px-2 py-1 bg-secondary rounded text-xs">Tab</kbd> Next clue
+          <kbd className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-secondary rounded text-[10px] sm:text-xs">Tab</kbd> Next
         </span>
         <span>
-          <kbd className="px-2 py-1 bg-secondary rounded text-xs">Arrows</kbd> Navigate
+          <kbd className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-secondary rounded text-[10px] sm:text-xs">Arrows</kbd> Move
         </span>
       </div>
     </div>

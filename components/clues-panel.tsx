@@ -39,7 +39,7 @@ export function CluesPanel({
   }
 
   return (
-    <div className="grid md:grid-cols-2 gap-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
       <div>
         <h3 className="text-lg font-semibold text-primary mb-3 flex items-center gap-2">
           <span className="w-8 h-8 flex items-center justify-center bg-primary/10 rounded">→</span>

@@ -29,7 +29,7 @@ export function CrosswordCell({
   inputRef,
 }: CrosswordCellProps) {
   if (cell.isBlack) {
-    return <div className="w-10 h-10 md:w-12 md:h-12 bg-background" />;
+    return <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-foreground" />;
   }
 
   const cellKey = `${cell.row}-${cell.col}`;
@@ -39,7 +39,7 @@ export function CrosswordCell({
   return (
     <div
       className={cn(
-        "relative w-10 h-10 md:w-12 md:h-12 border border-border transition-colors cursor-pointer",
+        "relative w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 border border-border transition-colors cursor-pointer",
         isSelected && "bg-[var(--cell-active)] border-primary",
         !isSelected && isHighlighted && "bg-[var(--cell-highlighted)]",
         !isSelected && !isHighlighted && "bg-card",
@@ -49,7 +49,7 @@ export function CrosswordCell({
       onClick={onClick}
     >
       {cell.number && (
-        <span className="absolute top-0.5 left-1 text-[10px] md:text-xs text-muted-foreground font-medium">
+        <span className="absolute top-0 left-0.5 text-[8px] sm:text-[10px] md:text-xs text-muted-foreground font-medium leading-none">
           {cell.number}
         </span>
       )}
@@ -61,7 +61,7 @@ export function CrosswordCell({
         onChange={() => {}}
         onKeyDown={onKeyDown}
         className={cn(
-          "w-full h-full bg-transparent text-center text-lg md:text-xl font-bold uppercase outline-none caret-transparent",
+          "w-full h-full bg-transparent text-center text-base sm:text-lg md:text-xl font-bold uppercase outline-none caret-transparent",
           isSelected ? "text-primary-foreground" : "text-foreground"
         )}
         readOnly={showAnswers}
