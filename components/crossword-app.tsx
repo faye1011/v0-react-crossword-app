@@ -5,18 +5,9 @@ import { generateCrossword } from "@/lib/crossword-generator";
 import { CrosswordGrid } from "./crossword-grid";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-
+import { data } from "../app/content/questions.js";
 // Sample crossword data - users can replace this
-const sampleData = [
-  { question: "The closest star to Earth", answer: "SUN" },
-  { question: "Frozen water", answer: "ICE" },
-  { question: "A large body of salt water", answer: "OCEAN" },
-  { question: "The third planet from the sun", answer: "EARTH" },
-  { question: "Opposite of night", answer: "DAY" },
-  { question: "A flying mammal", answer: "BAT" },
-  { question: "The color of grass", answer: "GREEN" },
-  { question: "365 days", answer: "YEAR" },
-];
+const sampleData = data
 
 export function CrosswordApp() {
   const [questionsAndAnswers, setQuestionsAndAnswers] = useState(sampleData);
