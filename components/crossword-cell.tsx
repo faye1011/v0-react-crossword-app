@@ -28,8 +28,7 @@ export function CrosswordCell({
   onKeyDown,
   inputRef,
 }: CrosswordCellProps) {
-  // Fixed cell size — never changes regardless of viewport
-  const CELL_SIZE = 44; // px
+  const CELL_SIZE = 40;
 
   if (cell.isBlack) {
     return (
@@ -48,17 +47,16 @@ export function CrosswordCell({
     <div
       style={{ width: CELL_SIZE, height: CELL_SIZE, flexShrink: 0 }}
       className={cn(
-        "relative border border-border transition-colors cursor-pointer",
-        isSelected && "bg-[var(--cell-active)] border-primary",
-        !isSelected && isHighlighted && "bg-[var(--cell-highlighted)]",
-        !isSelected && !isHighlighted && "bg-card",
-        isCorrect && "bg-[var(--cell-correct)]",
-        isIncorrect && "bg-[var(--cell-incorrect)]"
+        "relative border border-border transition-colors cursor-pointer bg-background",
+        isSelected && "bg-foreground",
+        !isSelected && isHighlighted && "bg-muted",
+        isCorrect && "bg-green-100 dark:bg-green-900/30",
+        isIncorrect && "bg-red-100 dark:bg-red-900/30"
       )}
       onClick={onClick}
     >
       {cell.number && (
-        <span className="absolute top-0.5 left-0.5 text-[9px] text-muted-foreground font-semibold leading-none pointer-events-none">
+        <span className="absolute top-0 left-0.5 text-[9px] text-muted-foreground font-medium leading-none pointer-events-none">
           {cell.number}
         </span>
       )}
@@ -70,8 +68,8 @@ export function CrosswordCell({
         onChange={() => {}}
         onKeyDown={onKeyDown}
         className={cn(
-          "w-full h-full bg-transparent text-center text-base font-bold uppercase outline-none caret-transparent select-none",
-          isSelected ? "text-primary-foreground" : "text-foreground"
+          "w-full h-full bg-transparent text-center text-sm font-medium uppercase outline-none caret-transparent select-none",
+          isSelected ? "text-background" : "text-foreground"
         )}
         readOnly={showAnswers}
         aria-label={`Cell row ${cell.row} col ${cell.col}`}

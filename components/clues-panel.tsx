@@ -19,12 +19,10 @@ export function CluesPanel({
   const acrossClues = clues.filter((c) => c.direction === "across");
   const downClues = clues.filter((c) => c.direction === "down");
 
-  // Create a map of clue id to display number based on starting position
   const clueNumbers = new Map<number, number>();
   const positionNumbers = new Map<string, number>();
   let currentNumber = 1;
 
-  // Sort all clues by position
   const sortedClues = [...clues].sort((a, b) => {
     if (a.row !== b.row) return a.row - b.row;
     return a.col - b.col;
@@ -38,56 +36,44 @@ export function CluesPanel({
     clueNumbers.set(clue.id, positionNumbers.get(posKey)!);
   }
 
+  const ClueList = ({
+    title,
+    items,
+  }: {
+    title: string;
+    items: CrosswordClue[];
+  }) => (
+    <div>
+      <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+        {title}
+      </h3>
+      <div className="space-y-1">
+        {items.map((clue) => (
+          <button
+            key={clue.id}
+            onClick={() => onClueClick(clue)}
+            className={cn(
+              "w-full text-left px-2 py-1.5 rounded text-sm transition-colors",
+              selectedClueId === clue.id
+                ? "bg-foreground text-background"
+                : "hover:bg-muted",
+              completedClues.has(clue.id) && "line-through opacity-50"
+            )}
+          >
+            <span className="font-medium text-muted-foreground mr-1.5">
+              {clueNumbers.get(clue.id)}
+            </span>
+            {clue.clue}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
-    <div className="grid md:grid-cols-2 gap-6">
-      <div>
-        <h3 className="text-lg font-semibold text-primary mb-3 flex items-center gap-2">
-          <span className="w-8 h-8 flex items-center justify-center bg-primary/10 rounded">→</span>
-          Across
-        </h3>
-        <div className="space-y-2">
-          {acrossClues.map((clue) => (
-            <button
-              key={clue.id}
-              onClick={() => onClueClick(clue)}
-              className={cn(
-                "w-full text-left p-3 rounded-lg transition-all text-sm",
-                selectedClueId === clue.id
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card hover:bg-secondary",
-                completedClues.has(clue.id) && "line-through opacity-60"
-              )}
-            >
-              <span className="font-bold mr-2">{clueNumbers.get(clue.id)}.</span>
-              {clue.clue}
-            </button>
-          ))}
-        </div>
-      </div>
-      <div>
-        <h3 className="text-lg font-semibold text-primary mb-3 flex items-center gap-2">
-          <span className="w-8 h-8 flex items-center justify-center bg-primary/10 rounded">↓</span>
-          Down
-        </h3>
-        <div className="space-y-2">
-          {downClues.map((clue) => (
-            <button
-              key={clue.id}
-              onClick={() => onClueClick(clue)}
-              className={cn(
-                "w-full text-left p-3 rounded-lg transition-all text-sm",
-                selectedClueId === clue.id
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card hover:bg-secondary",
-                completedClues.has(clue.id) && "line-through opacity-60"
-              )}
-            >
-              <span className="font-bold mr-2">{clueNumbers.get(clue.id)}.</span>
-              {clue.clue}
-            </button>
-          ))}
-        </div>
-      </div>
+    <div className="space-y-4">
+      <ClueList title="Across" items={acrossClues} />
+      <ClueList title="Down" items={downClues} />
     </div>
   );
 }

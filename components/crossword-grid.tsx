@@ -4,7 +4,6 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import { CrosswordData, CrosswordClue, UserInput } from "@/lib/crossword-types";
 import { CrosswordCell } from "./crossword-cell";
 import { CluesPanel } from "./clues-panel";
-import { Button } from "@/components/ui/button";
 
 interface CrosswordGridProps {
   data: CrosswordData;
@@ -21,8 +20,7 @@ export function CrosswordGrid({ data }: CrosswordGridProps) {
   const [isComplete, setIsComplete] = useState(false);
   const cellRefs = useRef<Map<string, HTMLInputElement>>(new Map());
 
-  // Fixed cell size in px — must match crossword-cell.tsx
-  const CELL_SIZE = 44;
+  const CELL_SIZE = 40;
 
   // Get highlighted cells for current clue
   const getHighlightedCells = useCallback((): Set<string> => {
@@ -225,57 +223,57 @@ export function CrosswordGrid({ data }: CrosswordGridProps) {
   const gridHeightPx = data.gridSize * CELL_SIZE;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        {/* Progress */}
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="text-sm text-muted-foreground whitespace-nowrap">Progress:</span>
-          <div className="w-28 h-2 bg-secondary rounded-full overflow-hidden flex-shrink-0">
+      <div className="flex items-center justify-between text-sm">
+        <div className="flex items-center gap-3">
+          <span className="text-muted-foreground">
+            {completedClues.size}/{data.clues.length} clues
+          </span>
+          <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
             <div
-              className="h-full bg-primary transition-all duration-300"
+              className="h-full bg-foreground transition-all duration-300"
               style={{ width: `${(completedClues.size / data.clues.length) * 100}%` }}
             />
           </div>
-          <span className="text-sm font-medium whitespace-nowrap">
-            {completedClues.size}/{data.clues.length}
-          </span>
         </div>
-        {/* Buttons */}
-        <div className="flex gap-2 flex-shrink-0">
-          <Button variant="outline" size="sm" onClick={() => setCheckMode(true)}>Check</Button>
-          <Button variant="outline" size="sm" onClick={() => { setShowAnswers(true); setCheckMode(false); }}>Reveal</Button>
-          <Button variant="outline" size="sm" onClick={handleClear}>Clear</Button>
+        <div className="flex gap-1">
+          <button
+            onClick={() => setCheckMode(true)}
+            className="px-2 py-1 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Check
+          </button>
+          <button
+            onClick={() => { setShowAnswers(true); setCheckMode(false); }}
+            className="px-2 py-1 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Reveal
+          </button>
+          <button
+            onClick={handleClear}
+            className="px-2 py-1 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Clear
+          </button>
         </div>
       </div>
 
       {/* Completion banner */}
       {isComplete && (
-        <div className="p-4 bg-[var(--cell-correct)] rounded-lg text-center">
-          <p className="text-lg font-bold text-foreground">
-            🎉 Congratulations! You completed the crossword!
-          </p>
+        <div className="py-2 px-3 bg-foreground text-background rounded text-center text-sm font-medium">
+          Puzzle complete!
         </div>
       )}
 
-      {/*
-        Main layout:
-        - On large screens: grid (75%) | clues (25%) side by side
-        - On small screens: grid on top, clues below (stacked)
-        The grid area scrolls horizontally if the viewport is narrower than the grid,
-        but cells never shrink.
-      */}
+      {/* Main layout */}
       <div className="flex flex-col lg:flex-row gap-6 items-start">
-
-        {/* ── Grid column ── takes up 75% on large screens */}
-        <div className="w-full lg:w-[75%] flex-shrink-0 min-w-0">
-          {/* Scrollable wrapper — scrolls horizontally on very small screens
-              rather than squishing the cells */}
+        {/* Grid */}
+        <div className="flex-shrink-0">
           <div className="overflow-auto">
-            {/* The inner div is sized to exactly fit the grid, no more, no less */}
             <div
-              className="border border-border bg-background rounded-lg p-1 inline-block"
-              style={{ minWidth: gridWidthPx + 2 /* +border */ }}
+              className="border border-border bg-background inline-block"
+              style={{ minWidth: gridWidthPx }}
             >
               <div
                 style={{
@@ -320,32 +318,15 @@ export function CrosswordGrid({ data }: CrosswordGridProps) {
           </div>
         </div>
 
-        {/* ── Clues column ── takes up 25% on large screens, full width below */}
-        <div className="w-full lg:w-[25%] flex-shrink-0">
-          {/* On large screens the clues panel scrolls independently so it
-              doesn't push the grid around. Max-height matches a typical grid. */}
-          <div className="bg-secondary/30 rounded-lg p-4 lg:max-h-[600px] lg:overflow-y-auto">
-            <CluesPanel
-              clues={data.clues}
-              selectedClueId={selectedClueId}
-              onClueClick={handleClueClick}
-              completedClues={completedClues}
-            />
-          </div>
+        {/* Clues */}
+        <div className="w-full lg:w-72 lg:max-h-[500px] lg:overflow-y-auto">
+          <CluesPanel
+            clues={data.clues}
+            selectedClueId={selectedClueId}
+            onClueClick={handleClueClick}
+            completedClues={completedClues}
+          />
         </div>
-      </div>
-
-      {/* Keyboard hints */}
-      <div className="flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
-        <span>
-          <kbd className="px-2 py-0.5 bg-secondary rounded text-xs">Space</kbd> Toggle direction
-        </span>
-        <span>
-          <kbd className="px-2 py-0.5 bg-secondary rounded text-xs">Tab</kbd> Next clue
-        </span>
-        <span>
-          <kbd className="px-2 py-0.5 bg-secondary rounded text-xs">↑↓←→</kbd> Navigate
-        </span>
       </div>
     </div>
   );
