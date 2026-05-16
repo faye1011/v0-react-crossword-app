@@ -54,7 +54,8 @@ export function CrosswordApp() {
     <div className="bg-background">
       {/* Full-page header */}
       <header className="h-screen flex flex-col items-center justify-center relative">
-        <h1 className="text-4xl font-semibold text-foreground text-center">ALFIES BDAY QUIZ</h1>
+        <h1 className="text-4xl font-semibold text-foreground text-center mb-2">ALFIES BDAY QUIZ</h1>
+        <p>happy birthday to my favourite person. here's to doing many many more crosswords together. </p>
         <button
           onClick={scrollToCrossword}
           aria-label="Scroll to crossword"
