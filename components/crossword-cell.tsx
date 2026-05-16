@@ -48,8 +48,8 @@ export function CrosswordCell({
       style={{ width: CELL_SIZE, height: CELL_SIZE, flexShrink: 0 }}
       className={cn(
         "relative border border-border transition-colors cursor-pointer bg-background",
-        isSelected && "bg-foreground",
-        !isSelected && isHighlighted && "bg-muted",
+        isSelected && "bg-amber-100 dark:bg-amber-900/40 border-amber-400",
+        !isSelected && isHighlighted && "bg-amber-50 dark:bg-amber-900/20",
         isCorrect && "bg-green-100 dark:bg-green-900/30",
         isIncorrect && "bg-red-100 dark:bg-red-900/30"
       )}
@@ -67,10 +67,7 @@ export function CrosswordCell({
         value={displayLetter}
         onChange={() => {}}
         onKeyDown={onKeyDown}
-        className={cn(
-          "w-full h-full bg-transparent text-center text-sm font-medium uppercase outline-none caret-transparent select-none",
-          isSelected ? "text-background" : "text-foreground"
-        )}
+        className="w-full h-full bg-transparent text-center text-sm font-medium uppercase outline-none caret-transparent select-none text-foreground"
         readOnly={showAnswers}
         aria-label={`Cell row ${cell.row} col ${cell.col}`}
       />
