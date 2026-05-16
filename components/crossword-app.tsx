@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { generateCrossword } from "@/lib/crossword-generator";
 import { CrosswordGrid } from "./crossword-grid";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { ChevronDown } from "lucide-react";
 import { data } from "../app/content/questions.js";
 
 const sampleData = data;
@@ -15,6 +16,11 @@ export function CrosswordApp() {
   const [showEditor, setShowEditor] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [key, setKey] = useState(0);
+  const crosswordRef = useRef<HTMLDivElement>(null);
+
+  const scrollToCrossword = () => {
+    crosswordRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   const crosswordData = useMemo(() => {
     return generateCrossword(questionsAndAnswers);
@@ -45,25 +51,21 @@ export function CrosswordApp() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* Header */}
-        <header className="flex items-center justify-center mb-6 pb-4 border-b border-border h-[500px]">
-          <h1 className="text-4xl font-semibold text-foreground text-center">ALFIES BDAY QUIZ</h1>
-          {/* <div className="flex gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowEditor(!showEditor)}
-            >
-              {showEditor ? "Close" : "Edit"}
-            </Button>
-            <Button variant="ghost" size="sm" onClick={handleReset}>
-              New
-            </Button>
-          </div> */}
-        </header>
+    <div className="bg-background">
+      {/* Full-page header */}
+      <header className="h-screen flex flex-col items-center justify-center relative">
+        <h1 className="text-4xl font-semibold text-foreground text-center">ALFIES BDAY QUIZ</h1>
+        <button
+          onClick={scrollToCrossword}
+          aria-label="Scroll to crossword"
+          className="absolute bottom-10 flex items-center justify-center w-12 h-12 rounded-full border border-border text-foreground hover:bg-muted transition-colors"
+        >
+          <ChevronDown className="w-6 h-6" />
+        </button>
+      </header>
 
+      {/* Crossword section */}
+      <div ref={crosswordRef} className="max-w-7xl mx-auto px-4 py-6">
         {/* JSON Editor */}
         {showEditor && (
           <div className="mb-6 p-4 bg-muted/50 rounded-lg">
@@ -92,7 +94,6 @@ export function CrosswordApp() {
           </div>
         )}
 
-        {/* Crossword Grid */}
         {crosswordData.clues.length > 0 ? (
           <CrosswordGrid key={key} data={crosswordData} />
         ) : (
