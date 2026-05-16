@@ -53,13 +53,24 @@ export function CrosswordApp() {
   return (
     <div className="bg-background">
       {/* Full-page header */}
-      <header className="h-screen flex flex-col items-center justify-center relative">
-        <h1 className="text-4xl font-semibold text-foreground text-center mb-2">ALFIES BDAY QUIZ</h1>
-        <p>happy birthday to my favourite person. here's to doing many many more crosswords together. </p>
+      <header className="h-screen flex flex-col items-center justify-center relative bg-gradient-to-b from-green-50 to-white overflow-hidden">
+        {/* Decorative blobs */}
+        <div className="absolute top-16 left-16 w-48 h-48 bg-green-200 rounded-full opacity-30 blur-3xl" />
+        <div className="absolute bottom-24 right-20 w-64 h-64 bg-emerald-200 rounded-full opacity-25 blur-3xl" />
+
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 fill-mode-both text-center px-4">
+          <h1 className="text-5xl font-bold text-green-800 tracking-wide mb-4">
+            ALFIES BDAY QUIZ
+          </h1>
+          <p className="animate-in fade-in duration-700 delay-300 fill-mode-both text-green-600 text-lg max-w-md mx-auto">
+            happy birthday to my favourite person. here&apos;s to doing many many more crosswords together.
+          </p>
+        </div>
+
         <button
           onClick={scrollToCrossword}
           aria-label="Scroll to crossword"
-          className="absolute bottom-10 flex items-center justify-center w-12 h-12 rounded-full border border-border text-foreground hover:bg-muted transition-colors"
+          className="animate-in fade-in duration-700 delay-500 fill-mode-both absolute bottom-10 flex items-center justify-center w-12 h-12 rounded-full border-2 border-green-400 text-green-600 hover:bg-green-100 transition-colors"
         >
           <ChevronDown className="w-6 h-6" />
         </button>
