@@ -77,7 +77,11 @@ export function CrosswordApp() {
       </header>
 
       {/* Crossword section */}
-      <div ref={crosswordRef} className="max-w-7xl mx-auto px-4 py-6">
+      <div ref={crosswordRef} className="relative bg-gradient-to-b from-green-50/60 to-white min-h-screen">
+        {/* Decorative blobs */}
+        <div className="absolute top-10 right-10 w-72 h-72 bg-green-100 rounded-full opacity-40 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-20 left-8 w-56 h-56 bg-emerald-100 rounded-full opacity-35 blur-3xl pointer-events-none" />
+      <div className="relative max-w-7xl mx-auto px-4 py-10">
         {/* JSON Editor */}
         {showEditor && (
           <div className="mb-6 p-4 bg-muted/50 rounded-lg">
@@ -113,6 +117,7 @@ export function CrosswordApp() {
             <p>No crossword could be generated. Try adding more questions.</p>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

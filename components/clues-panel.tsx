@@ -44,7 +44,7 @@ export function CluesPanel({
     items: CrosswordClue[];
   }) => (
     <div>
-      <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-2">
+      <h3 className="text-xs font-semibold text-green-700 uppercase tracking-widest mb-2 border-b border-green-200 pb-1">
         {title}
       </h3>
       <div className="space-y-1">
@@ -55,12 +55,12 @@ export function CluesPanel({
             className={cn(
               "w-full text-left px-2 py-1.5 rounded text-sm transition-colors",
               selectedClueId === clue.id
-                ? "bg-foreground text-background"
-                : "hover:bg-muted",
+                ? "bg-green-600 text-white"
+                : "hover:bg-green-50",
               completedClues.has(clue.id) && "line-through opacity-50"
             )}
           >
-            <span className="font-medium text-muted-foreground mr-1.5">
+            <span className={cn("font-medium mr-1.5", selectedClueId === clue.id ? "text-green-200" : "text-muted-foreground")}>
               {clueNumbers.get(clue.id)}
             </span>
             {clue.clue}
