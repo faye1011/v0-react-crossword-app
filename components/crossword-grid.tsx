@@ -232,7 +232,7 @@ export function CrosswordGrid({ data }: CrosswordGridProps) {
           </span>
           <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
             <div
-              className="h-full bg-foreground transition-all duration-300 text-lg"
+              className="h-full bg-green-500 transition-all duration-300"
               style={{ width: `${(completedClues.size / data.clues.length) * 100}%` }}
             />
           </div>
@@ -319,13 +319,17 @@ export function CrosswordGrid({ data }: CrosswordGridProps) {
         </div>
 
         {/* Clues */}
-        <div className="w-full lg:w-72 lg:max-h-[800px] lg:overflow-y-auto">
-          <CluesPanel
-            clues={data.clues}
-            selectedClueId={selectedClueId}
-            onClueClick={handleClueClick}
-            completedClues={completedClues}
-          />
+        <div className="relative w-full lg:w-72 flex-shrink-0">
+          <div className="lg:max-h-[600px] lg:overflow-y-auto pr-1 [scrollbar-width:thin] [scrollbar-color:#86efac_transparent]">
+            <CluesPanel
+              clues={data.clues}
+              selectedClueId={selectedClueId}
+              onClueClick={handleClueClick}
+              completedClues={completedClues}
+            />
+          </div>
+          {/* fade mask hinting there's more to scroll */}
+          <div className="hidden lg:block absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-green-50/80 to-transparent pointer-events-none rounded-b" />
         </div>
       </div>
     </div>
