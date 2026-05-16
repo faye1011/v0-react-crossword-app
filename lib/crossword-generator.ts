@@ -1,4 +1,5 @@
 import { CrosswordClue, Cell, CrosswordData } from "./crossword-types";
+import { createSeededRandom, seedFromData } from "./seeded-random";
 
 interface PlacedWord {
   word: string;
@@ -16,24 +17,27 @@ interface CandidatePlacement {
   score: number;
 }
 
-// More attempts = denser, better layouts. 150 is a good balance of speed vs quality.
 const ATTEMPTS = 150;
 
 export function generateCrossword(
   questionsAndAnswers: { question: string; answer: string }[]
 ): CrosswordData {
   const words = questionsAndAnswers.map((qa) => ({
-    word: qa.answer.toUpperCase().replace(/\s/g, ""),
+    word: qa.answer.toUpperCase().replace(/[^A-Z]/g, ""),
     clue: qa.question,
   }));
+
+  const baseSeed = seedFromData(questionsAndAnswers);
 
   let bestResult: CrosswordData | null = null;
   let bestScore = -Infinity;
 
   for (let i = 0; i < ATTEMPTS; i++) {
-    // Shuffle word order slightly each attempt so we explore different layouts
-    const shuffled = shuffleWords([...words]);
-    const result = generateSingleLayout(shuffled);
+    const attemptSeed = baseSeed + i * 1_000_003;
+    const random = createSeededRandom(attemptSeed);
+
+    const shuffled = shuffleWords([...words], random);
+    const result = generateSingleLayout(shuffled, random);
     const score = evaluateLayout(result);
 
     if (score > bestScore) {
@@ -45,17 +49,16 @@ export function generateCrossword(
   return bestResult!;
 }
 
-/**
- * Shuffle all words except the longest one (which always goes first as the anchor).
- */
-function shuffleWords(words: { word: string; clue: string }[]) {
+function shuffleWords(
+  words: { word: string; clue: string }[],
+  random: () => number
+) {
   const sorted = [...words].sort((a, b) => b.word.length - a.word.length);
   const anchor = sorted[0];
   const rest = sorted.slice(1);
 
-  // Fisher-Yates shuffle on the rest
   for (let i = rest.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(random() * (i + 1));
     [rest[i], rest[j]] = [rest[j], rest[i]];
   }
 
@@ -63,13 +66,12 @@ function shuffleWords(words: { word: string; clue: string }[]) {
 }
 
 function generateSingleLayout(
-  words: { word: string; clue: string }[]
+  words: { word: string; clue: string }[],
+  random: () => number
 ): CrosswordData {
-  // Use a generous internal grid; we trim it tightly afterwards
   const gridSize = calculateGridSize(words);
   const placedWords: PlacedWord[] = [];
 
-  // Place first (longest) word dead-centre horizontally
   const first = words[0];
   placedWords.push({
     ...first,
@@ -78,9 +80,8 @@ function generateSingleLayout(
     direction: "across",
   });
 
-  // Try each remaining word; if it can't be placed, skip it
   for (const word of words.slice(1)) {
-    const placement = findBestPlacement(word, placedWords, gridSize);
+    const placement = findBestPlacement(word, placedWords, gridSize, random);
     if (placement) {
       placedWords.push({ ...word, ...placement });
     }
@@ -92,16 +93,15 @@ function generateSingleLayout(
 function findBestPlacement(
   wordObj: { word: string; clue: string },
   placedWords: PlacedWord[],
-  gridSize: number
+  gridSize: number,
+  random: () => number
 ): { row: number; col: number; direction: "across" | "down" } | null {
   const word = wordObj.word;
   const candidates: CandidatePlacement[] = [];
 
   const acrossCount = placedWords.filter((w) => w.direction === "across").length;
-  const downCount   = placedWords.filter((w) => w.direction === "down").length;
+  const downCount = placedWords.filter((w) => w.direction === "down").length;
 
-  // For every already-placed word, try to hang the new word off every
-  // matching letter pair — this is the core of the density algorithm.
   for (const placed of placedWords) {
     for (let i = 0; i < word.length; i++) {
       for (let j = 0; j < placed.word.length; j++) {
@@ -110,47 +110,36 @@ function findBestPlacement(
         const isAcross = placed.direction === "across";
         const direction: "across" | "down" = isAcross ? "down" : "across";
 
-        // Position so word[i] sits on placed.word[j]
-        const row = isAcross ? placed.row - i         : placed.row + j;
-        const col = isAcross ? placed.col + j         : placed.col - i;
+        const row = isAcross ? placed.row - i : placed.row + j;
+        const col = isAcross ? placed.col + j : placed.col - i;
 
         if (!isValidPlacement(word, row, col, direction, placedWords, gridSize)) {
           continue;
         }
 
         const intersections = countIntersections(word, row, col, direction, placedWords);
-
-        // Strongly reward intersections — this is the primary density driver
         const intersectionScore = intersections * 20;
 
-        // Reward placing close to the centre of the current puzzle bounding box
-        // rather than the centre of the oversized working grid
         const bbox = getBoundingBox(placedWords, gridSize);
         const centerRow = (bbox.minRow + bbox.maxRow) / 2;
         const centerCol = (bbox.minCol + bbox.maxCol) / 2;
-        const wordCenterRow = direction === "down"     ? row + word.length / 2 : row;
-        const wordCenterCol = direction === "across"   ? col + word.length / 2 : col;
+        const wordCenterRow = direction === "down" ? row + word.length / 2 : row;
+        const wordCenterCol = direction === "across" ? col + word.length / 2 : col;
         const compactness = -(
           Math.abs(wordCenterRow - centerRow) +
           Math.abs(wordCenterCol - centerCol)
         );
 
-        // Mild reward for keeping across/down counts balanced
         const balanceBonus =
           direction === "across"
             ? downCount - acrossCount
             : acrossCount - downCount;
 
-        // Reward words that share MORE of their letters with existing cells
-        // (higher density means more overlapping letters)
         const overlapRatio = intersections / word.length;
         const overlapScore = overlapRatio * 15;
 
         const score =
-          intersectionScore +
-          overlapScore     +
-          compactness * 1  +
-          balanceBonus * 3;
+          intersectionScore + overlapScore + compactness * 1 + balanceBonus * 3;
 
         candidates.push({ row, col, direction, intersections, score });
       }
@@ -161,11 +150,12 @@ function findBestPlacement(
 
   candidates.sort((a, b) => b.score - a.score);
 
-  return {
-    row:       candidates[0].row,
-    col:       candidates[0].col,
-    direction: candidates[0].direction,
-  };
+  const topTier = candidates.filter(
+    (c) => c.score >= candidates[0].score - 0.001
+  );
+  const pick = topTier[Math.floor(random() * topTier.length)];
+
+  return { row: pick.row, col: pick.col, direction: pick.direction };
 }
 
 function getBoundingBox(placedWords: PlacedWord[], gridSize: number) {
@@ -186,11 +176,8 @@ function getBoundingBox(placedWords: PlacedWord[], gridSize: number) {
 
 function evaluateLayout(grid: CrosswordData): number {
   let score = 0;
-
-  // Strongly reward using more words
   score += grid.clues.length * 100;
 
-  // Strongly reward intersections (shared cells)
   let intersections = 0;
   for (const row of grid.grid) {
     for (const cell of row) {
@@ -198,16 +185,51 @@ function evaluateLayout(grid: CrosswordData): number {
     }
   }
   score += intersections * 25;
-
-  // Penalise large grids — this pushes towards NYT compactness
   score -= grid.gridSize * grid.gridSize * 0.5;
 
-  // Reward high fill density (non-black cells / total cells)
   const totalCells = grid.gridSize * grid.gridSize;
   const filledCells = grid.grid.flat().filter((c) => !c.isBlack).length;
   score += (filledCells / totalCells) * 200;
 
   return score;
+}
+
+/** Build a letter-lookup grid from already-placed words. */
+function buildGrid(placedWords: PlacedWord[], gridSize: number): (string | null)[][] {
+  const grid: (string | null)[][] = Array.from({ length: gridSize }, () =>
+    Array(gridSize).fill(null)
+  );
+  for (const placed of placedWords) {
+    for (let i = 0; i < placed.word.length; i++) {
+      const r = placed.direction === "down" ? placed.row + i : placed.row;
+      const c = placed.direction === "across" ? placed.col + i : placed.col;
+      if (r >= 0 && r < gridSize && c >= 0 && c < gridSize) {
+        grid[r][c] = placed.word[i];
+      }
+    }
+  }
+  return grid;
+}
+
+/**
+ * Returns true when cell (r, c) is covered by a word running in exactly
+ * `dir`. Used to verify that an occupied neighbour is a legitimate crossing,
+ * not a parallel word that would create an illegal adjacency.
+ */
+function cellBelongsToDirection(
+  r: number,
+  c: number,
+  dir: "across" | "down",
+  placedWords: PlacedWord[]
+): boolean {
+  return placedWords.some((p) => {
+    if (p.direction !== dir) return false;
+    if (dir === "across") {
+      return p.row === r && c >= p.col && c < p.col + p.word.length;
+    } else {
+      return p.col === c && r >= p.row && r < p.row + p.word.length;
+    }
+  });
 }
 
 function isValidPlacement(
@@ -218,73 +240,90 @@ function isValidPlacement(
   placedWords: PlacedWord[],
   gridSize: number
 ): boolean {
+  // ── Bounds ──────────────────────────────────────────────────────────────
   if (row < 0 || col < 0) return false;
   if (direction === "across" && col + word.length > gridSize) return false;
   if (direction === "down"   && row + word.length > gridSize) return false;
 
-  // Build a fast lookup grid from already-placed words
-  const grid: (string | null)[][] = Array.from({ length: gridSize }, () =>
-    Array(gridSize).fill(null)
-  );
-  for (const placed of placedWords) {
-    for (let i = 0; i < placed.word.length; i++) {
-      const r = placed.direction === "down"    ? placed.row + i : placed.row;
-      const c = placed.direction === "across"  ? placed.col + i : placed.col;
-      grid[r][c] = placed.word[i];
-    }
-  }
+  const grid = buildGrid(placedWords, gridSize);
+  const perp: "across" | "down" = direction === "across" ? "down" : "across";
 
+  // ── No letter immediately before the word starts ─────────────────────
+  if (direction === "across" && col > 0 && grid[row][col - 1] !== null) return false;
+  if (direction === "down"   && row > 0 && grid[row - 1][col] !== null) return false;
+
+  // ── No letter immediately after the word ends ─────────────────────────
+  if (direction === "across" && col + word.length < gridSize && grid[row][col + word.length] !== null) return false;
+  if (direction === "down"   && row + word.length < gridSize && grid[row + word.length][col] !== null) return false;
+
+  // ── Check every cell the word would occupy ────────────────────────────
   for (let i = 0; i < word.length; i++) {
     const r = direction === "down"    ? row + i : row;
     const c = direction === "across"  ? col + i : col;
 
-    // Letter conflict
-    if (grid[r][c] !== null && grid[r][c] !== word[i]) return false;
+    const existing = grid[r][c];
 
-    // Adjacency check — prevent two parallel words from running side by side
-    // (a blank cell can't have a neighbour that belongs to a parallel word)
-    if (grid[r][c] === null) {
+    if (existing !== null) {
+      // Cell already has a letter.
+      // Rule 1: letters must match.
+      if (existing !== word[i]) return false;
+      // Rule 2: the cell must belong to a word in the PERPENDICULAR direction
+      //         (a true crossing). If it belongs to a parallel word, two words
+      //         would be sharing cells in the same direction — illegal.
+      if (!cellBelongsToDirection(r, c, perp, placedWords)) return false;
+
+    } else {
+      // Cell is empty. Ensure we are not running parallel alongside another word.
+      // For an ACROSS word, the danger is cells directly above/below being occupied
+      // by another ACROSS word (they would form an illegal parallel block).
+      // For a DOWN word, the danger is cells directly left/right being occupied
+      // by another DOWN word.
       if (direction === "across") {
-        if (r > 0           && grid[r - 1][c] !== null && !isIntersectionCell(r - 1, c, direction, placedWords)) return false;
-        if (r < gridSize-1  && grid[r + 1][c] !== null && !isIntersectionCell(r + 1, c, direction, placedWords)) return false;
+        // Cell above
+        if (r > 0 && grid[r - 1][c] !== null) {
+          // OK only if that cell belongs to a DOWN word crossing this column
+          if (!cellBelongsToDirection(r - 1, c, "down", placedWords)) return false;
+          // And that down word must actually pass through THIS row too
+          // (otherwise the neighbour is a floating letter from a parallel word).
+          const crossesHere = placedWords.some(
+            (p) => p.direction === "down" && p.col === c &&
+                   p.row <= r && p.row + p.word.length > r
+          );
+          if (!crossesHere) return false;
+        }
+        // Cell below
+        if (r < gridSize - 1 && grid[r + 1][c] !== null) {
+          if (!cellBelongsToDirection(r + 1, c, "down", placedWords)) return false;
+          const crossesHere = placedWords.some(
+            (p) => p.direction === "down" && p.col === c &&
+                   p.row <= r && p.row + p.word.length > r
+          );
+          if (!crossesHere) return false;
+        }
       } else {
-        if (c > 0           && grid[r][c - 1] !== null && !isIntersectionCell(r, c - 1, direction, placedWords)) return false;
-        if (c < gridSize-1  && grid[r][c + 1] !== null && !isIntersectionCell(r, c + 1, direction, placedWords)) return false;
+        // Cell to the left
+        if (c > 0 && grid[r][c - 1] !== null) {
+          if (!cellBelongsToDirection(r, c - 1, "across", placedWords)) return false;
+          const crossesHere = placedWords.some(
+            (p) => p.direction === "across" && p.row === r &&
+                   p.col <= c && p.col + p.word.length > c
+          );
+          if (!crossesHere) return false;
+        }
+        // Cell to the right
+        if (c < gridSize - 1 && grid[r][c + 1] !== null) {
+          if (!cellBelongsToDirection(r, c + 1, "across", placedWords)) return false;
+          const crossesHere = placedWords.some(
+            (p) => p.direction === "across" && p.row === r &&
+                   p.col <= c && p.col + p.word.length > c
+          );
+          if (!crossesHere) return false;
+        }
       }
     }
   }
 
-  // No word can start immediately before or end immediately after this one
-  if (direction === "across") {
-    if (col > 0              && grid[row][col - 1]            !== null) return false;
-    if (col + word.length < gridSize && grid[row][col + word.length] !== null) return false;
-  } else {
-    if (row > 0              && grid[row - 1][col]            !== null) return false;
-    if (row + word.length < gridSize && grid[row + word.length][col] !== null) return false;
-  }
-
   return true;
-}
-
-/**
- * Returns true if (r, c) is already a valid intersection point for a word
- * perpendicular to `newDirection` — meaning it's fine for the new word's
- * blank cell to have a neighbour there.
- */
-function isIntersectionCell(
-  r: number,
-  c: number,
-  newDirection: "across" | "down",
-  placedWords: PlacedWord[]
-): boolean {
-  const perp = newDirection === "across" ? "down" : "across";
-  return placedWords.some(
-    (p) =>
-      p.direction === perp &&
-      (perp === "down"
-        ? p.col === c && p.row <= r && p.row + p.word.length > r
-        : p.row === r && p.col <= c && p.col + p.word.length > c)
-  );
 }
 
 function countIntersections(
@@ -294,23 +333,22 @@ function countIntersections(
   direction: "across" | "down",
   placedWords: PlacedWord[]
 ): number {
-  // Build a grid large enough for all placements
   const size = 60;
   const grid: (string | null)[][] = Array.from({ length: size }, () =>
     Array(size).fill(null)
   );
   for (const placed of placedWords) {
     for (let i = 0; i < placed.word.length; i++) {
-      const r = placed.direction === "down"    ? placed.row + i : placed.row;
-      const c = placed.direction === "across"  ? placed.col + i : placed.col;
+      const r = placed.direction === "down" ? placed.row + i : placed.row;
+      const c = placed.direction === "across" ? placed.col + i : placed.col;
       if (r < size && c < size) grid[r][c] = placed.word[i];
     }
   }
 
   let count = 0;
   for (let i = 0; i < word.length; i++) {
-    const r = direction === "down"    ? row + i : row;
-    const c = direction === "across"  ? col + i : col;
+    const r = direction === "down" ? row + i : row;
+    const c = direction === "across" ? col + i : col;
     if (r < size && c < size && grid[r][c] === word[i]) count++;
   }
   return count;
@@ -324,7 +362,6 @@ function createCrosswordData(
     return { clues: [], grid: [], gridSize: 0 };
   }
 
-  // Find tight bounding box — no padding, NYT-style
   let minRow = gridSize, maxRow = 0, minCol = gridSize, maxCol = 0;
   for (const word of placedWords) {
     minRow = Math.min(minRow, word.row);
@@ -340,7 +377,6 @@ function createCrosswordData(
 
   const actualRows = maxRow - minRow + 1;
   const actualCols = maxCol - minCol + 1;
-  // Use a rectangular grid sized to fit content exactly
   const actualSize = Math.max(actualRows, actualCols);
 
   const adjustedWords = placedWords.map((w) => ({
@@ -349,7 +385,6 @@ function createCrosswordData(
     col: w.col - minCol,
   }));
 
-  // Initialise grid with all-black cells
   const grid: Cell[][] = Array.from({ length: actualSize }, (_, r) =>
     Array.from({ length: actualSize }, (_, c) => ({
       letter: "",
@@ -360,7 +395,6 @@ function createCrosswordData(
     }))
   );
 
-  // Sort words top-to-bottom, left-to-right for numbering
   adjustedWords.sort((a, b) => {
     if (a.row !== b.row) return a.row - b.row;
     return a.col - b.col;
@@ -379,20 +413,20 @@ function createCrosswordData(
     }
 
     clues.push({
-      id:        idx,
-      answer:    word.word,
-      clue:      word.clue,
+      id: idx,
+      answer: word.word,
+      clue: word.clue,
       direction: word.direction,
-      row:       word.row,
-      col:       word.col,
+      row: word.row,
+      col: word.col,
     });
 
     for (let i = 0; i < word.word.length; i++) {
-      const r = word.direction === "down"    ? word.row + i : word.row;
-      const c = word.direction === "across"  ? word.col + i : word.col;
+      const r = word.direction === "down" ? word.row + i : word.row;
+      const c = word.direction === "across" ? word.col + i : word.col;
 
       if (r < actualSize && c < actualSize) {
-        grid[r][c].letter  = word.word[i];
+        grid[r][c].letter = word.word[i];
         grid[r][c].isBlack = false;
         grid[r][c].clueIds.push(idx);
 
@@ -407,11 +441,9 @@ function createCrosswordData(
 }
 
 function calculateGridSize(words: { word: string }[]): number {
-  const maxLength    = Math.max(...words.map((w) => w.word.length));
+  const maxLength = Math.max(...words.map((w) => w.word.length));
   const totalLetters = words.reduce((sum, w) => sum + w.word.length, 0);
 
-  // Tighter formula: less slack means words are forced closer together.
-  // +2 gives just enough room to place without going out of bounds.
   return Math.max(
     maxLength + 2,
     Math.ceil(Math.sqrt(totalLetters * 1.4)) + 2,

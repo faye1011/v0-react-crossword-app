@@ -17,8 +17,21 @@ export const data =
         { question: "Band who released a massive hit album on the day you were born", answer: "BACKSTREETBOYS" },
         { question: "Day of the week you were born", answer: "TUESDAY" },
         { question: "Your favourite colour", answer: "PINK" },
-        // { question: "Your chinese Zodiac", answer: "RABBIT" },
+        { question: "Your chinese Zodiac", answer: "RABBIT" },
         { question: "Your generation", answer: "GENZ" },
         { question: "No.1 song day you were born", answer: "LIVINDAVIDALOCA" },
-        { question: "Your fave holiday", answer: "BRAZIL" },
+        { question: "Your fave holiday you've been on", answer: "BRAZIL" },
+        ///
+        { question: "Fave player", answer: "STEPHENCURRY" },
+        { question: "Best meal of yours (to me)", answer: "HAINANCHICKEN" },
+        { question: "If you were to do a quiz on this topic you'd win", answer: "GEOGRAPHY" },
+        { question: "Trip of your birthday present", answer: "LAKEDISTRICT" },
+        { question: "Your dream job", answer: "ASTRONAUT" },
+        { question: "Your dream job", answer: "ASTRONAUT" },
+        { question: "Your dream job", answer: "ASTRONAUT" },
+        { question: "Your dream job", answer: "ASTRONAUT" },
+        { question: "Your dream job", answer: "ASTRONAUT" },
+        { question: "Your dream job", answer: "ASTRONAUT" },
+         { question: "Your dream job", answer: "ASTRONAUT" },
+      
     ]

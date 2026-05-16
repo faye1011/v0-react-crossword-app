@@ -46,11 +46,11 @@ export function CrosswordApp() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-6xl mx-auto px-4 py-6">
+      <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Header */}
-        <header className="flex items-center justify-between mb-6 pb-4 border-b border-border">
-          <h1 className="text-2xl font-semibold text-foreground">Crossword</h1>
-          <div className="flex gap-2">
+        <header className="flex items-center justify-center mb-6 pb-4 border-b border-border h-[500px]">
+          <h1 className="text-4xl font-semibold text-foreground text-center">ALFIES BDAY QUIZ</h1>
+          {/* <div className="flex gap-2">
             <Button
               variant="ghost"
               size="sm"
@@ -61,7 +61,7 @@ export function CrosswordApp() {
             <Button variant="ghost" size="sm" onClick={handleReset}>
               New
             </Button>
-          </div>
+          </div> */}
         </header>
 
         {/* JSON Editor */}

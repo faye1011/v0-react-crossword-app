@@ -227,32 +227,32 @@ export function CrosswordGrid({ data }: CrosswordGridProps) {
       {/* Toolbar */}
       <div className="flex items-center justify-between text-sm">
         <div className="flex items-center gap-3">
-          <span className="text-muted-foreground">
+          <span className="text-muted-foreground text-lg">
             {completedClues.size}/{data.clues.length} clues
           </span>
           <div className="w-24 h-1.5 bg-muted rounded-full overflow-hidden">
             <div
-              className="h-full bg-foreground transition-all duration-300"
+              className="h-full bg-foreground transition-all duration-300 text-lg"
               style={{ width: `${(completedClues.size / data.clues.length) * 100}%` }}
             />
           </div>
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-1 mb-4">
           <button
             onClick={() => setCheckMode(true)}
-            className="px-2 py-1 text-muted-foreground hover:text-foreground transition-colors"
+            className={`px-2 py-1 text-muted-foreground hover:text-foreground transition-colors text-lg ${checkMode ? "bg-muted" : ""}`}
           >
             Check
           </button>
           <button
             onClick={() => { setShowAnswers(true); setCheckMode(false); }}
-            className="px-2 py-1 text-muted-foreground hover:text-foreground transition-colors"
+            className={`px-2 py-1 text-muted-foreground hover:text-foreground transition-colors text-lg ${showAnswers ? "bg-muted" : ""}`}
           >
             Reveal
           </button>
           <button
             onClick={handleClear}
-            className="px-2 py-1 text-muted-foreground hover:text-foreground transition-colors"
+            className="px-2 py-1 text-muted-foreground hover:text-foreground transition-colors text-lg"
           >
             Clear
           </button>
@@ -319,7 +319,7 @@ export function CrosswordGrid({ data }: CrosswordGridProps) {
         </div>
 
         {/* Clues */}
-        <div className="w-full lg:w-72 lg:max-h-[500px] lg:overflow-y-auto">
+        <div className="w-full lg:w-72 lg:max-h-[800px] lg:overflow-y-auto">
           <CluesPanel
             clues={data.clues}
             selectedClueId={selectedClueId}
