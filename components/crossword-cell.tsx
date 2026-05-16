@@ -28,8 +28,16 @@ export function CrosswordCell({
   onKeyDown,
   inputRef,
 }: CrosswordCellProps) {
+  // Fixed cell size — never changes regardless of viewport
+  const CELL_SIZE = 44; // px
+
   if (cell.isBlack) {
-    return <div className="w-10 h-10 md:w-12 md:h-12 bg-background" />;
+    return (
+      <div
+        style={{ width: CELL_SIZE, height: CELL_SIZE, flexShrink: 0 }}
+        className="bg-foreground"
+      />
+    );
   }
 
   const cellKey = `${cell.row}-${cell.col}`;
@@ -38,8 +46,9 @@ export function CrosswordCell({
 
   return (
     <div
+      style={{ width: CELL_SIZE, height: CELL_SIZE, flexShrink: 0 }}
       className={cn(
-        "relative w-10 h-10 md:w-12 md:h-12 border border-border transition-colors cursor-pointer",
+        "relative border border-border transition-colors cursor-pointer",
         isSelected && "bg-[var(--cell-active)] border-primary",
         !isSelected && isHighlighted && "bg-[var(--cell-highlighted)]",
         !isSelected && !isHighlighted && "bg-card",
@@ -49,7 +58,7 @@ export function CrosswordCell({
       onClick={onClick}
     >
       {cell.number && (
-        <span className="absolute top-0.5 left-1 text-[10px] md:text-xs text-muted-foreground font-medium">
+        <span className="absolute top-0.5 left-0.5 text-[9px] text-muted-foreground font-semibold leading-none pointer-events-none">
           {cell.number}
         </span>
       )}
@@ -61,10 +70,11 @@ export function CrosswordCell({
         onChange={() => {}}
         onKeyDown={onKeyDown}
         className={cn(
-          "w-full h-full bg-transparent text-center text-lg md:text-xl font-bold uppercase outline-none caret-transparent",
+          "w-full h-full bg-transparent text-center text-base font-bold uppercase outline-none caret-transparent select-none",
           isSelected ? "text-primary-foreground" : "text-foreground"
         )}
         readOnly={showAnswers}
+        aria-label={`Cell row ${cell.row} col ${cell.col}`}
       />
     </div>
   );
