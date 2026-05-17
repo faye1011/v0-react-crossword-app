@@ -61,10 +61,10 @@ export function CrosswordApp() {
         <div className="absolute bottom-24 right-20 w-64 h-64 bg-emerald-200 rounded-full opacity-25 blur-3xl" />
 
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-700 fill-mode-both text-center px-4">
-          <h1 className="text-5xl font-bold text-green-800 tracking-wide mb-4">
+          <h1 className="text-5xl font-bold text-black tracking-wide mb-4">
             ALFIES BIRTHDAY QUIZ
           </h1>
-          <p className="animate-in fade-in duration-700 delay-300 fill-mode-both text-green-600 text-lg max-w-md mx-auto">
+          <p className="animate-in fade-in duration-700 delay-300 fill-mode-both text-black-600 text-lg max-w-md mx-auto">
             happy birthday to my favourite person. here&apos;s to doing many many more crosswords together.
           </p>
         </div>
