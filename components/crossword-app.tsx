@@ -6,6 +6,7 @@ import { CrosswordGrid } from "./crossword-grid";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ChevronDown } from "lucide-react";
+import { Confetti } from "./confetti";
 import { data } from "../app/content/questions.js";
 
 const sampleData = data;
@@ -54,6 +55,7 @@ export function CrosswordApp() {
     <div className="bg-background">
       {/* Full-page header */}
       <header className="h-screen flex flex-col items-center justify-center relative bg-gradient-to-b from-green-50 to-white overflow-hidden">
+        <Confetti />
         {/* Decorative blobs */}
         <div className="absolute top-16 left-16 w-48 h-48 bg-green-200 rounded-full opacity-30 blur-3xl" />
         <div className="absolute bottom-24 right-20 w-64 h-64 bg-emerald-200 rounded-full opacity-25 blur-3xl" />
