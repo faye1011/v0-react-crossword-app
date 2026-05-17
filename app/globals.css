@@ -89,12 +89,6 @@
   --color-sidebar-ring: var(--sidebar-ring);
 }
 
-@keyframes confetti-fall {
-  0%   { transform: translateY(-16px) rotate(0deg); opacity: 0.8; }
-  80%  { opacity: 0.6; }
-  100% { transform: translateY(105vh) rotate(600deg); opacity: 0; }
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
