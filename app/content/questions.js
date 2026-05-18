@@ -16,7 +16,6 @@ export const data =
         { question: "Cutest job you've had", answer: "BALLERBABIES" },
         { question: "Band who released a massive hit album on the day you were born", answer: "BACKSTREETBOYS" },
         { question: "Day of the week you were born", answer: "TUESDAY" },
-        { question: "Your favourite colour", answer: "PINK" },
         { question: "Your chinese Zodiac", answer: "RABBIT" },
         { question: "Your generation", answer: "GENZ" },
         { question: "No.1 song day you were born", answer: "LIVINDAVIDALOCA" },
